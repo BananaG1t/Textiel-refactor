@@ -1,0 +1,72 @@
+{% extends "master.html" %}
+{% load i18n %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'home.css' %}">
+{% endblock %}
+
+{% block content %}
+<main class="home">
+
+    <section class="home-hero">
+        <div class="home-hero-content">
+            <span class="home-eyebrow">
+                {% translate "Welcome" %}
+            </span>
+
+            <h1>
+                {% translate "Welcome back" %}, {{ request.user.first_name }}
+            </h1>
+
+            <p>
+                {% translate "Manage your stores, products, users, and more from one place." %}
+            </p>
+        </div>
+    </section>
+
+    <section class="home-content">
+
+        <h2>{% translate "Get started" %}</h2>
+
+        <div class="home-links">
+
+            <a href="#" class="home-link">
+                <div class="home-link-icon">📦</div>
+
+                <div>
+                    <h3>{% translate "Products" %}</h3>
+                    <p>
+                        {% translate "View and manage your products." %}
+                    </p>
+                </div>
+            </a>
+
+            <a href="#" class="home-link">
+                <div class="home-link-icon">🏪</div>
+
+                <div>
+                    <h3>{% translate "Stores" %}</h3>
+                    <p>
+                        {% translate "View and manage your stores." %}
+                    </p>
+                </div>
+            </a>
+
+            <a href="#" class="home-link">
+                <div class="home-link-icon">👥</div>
+
+                <div>
+                    <h3>{% translate "Users" %}</h3>
+                    <p>
+                        {% translate "Manage users and their access." %}
+                    </p>
+                </div>
+            </a>
+
+        </div>
+
+    </section>
+
+</main>
+{% endblock %}

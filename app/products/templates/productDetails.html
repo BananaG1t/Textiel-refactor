@@ -1,0 +1,30 @@
+{% extends "master.html" %}
+
+{% block content %}
+    <h1>{{product.name}}</h1>
+    
+    <p>Physical stock: {{ product.quantity }}</p>
+    <p>Reserved: {{ product.reserved_quantity }}</p>
+    <p>Available: {{ product.available }}</p>
+
+    <table>
+        <tr>
+            <th>Movement type</th>
+            <th>Amount</th>
+            <th>Quantity after</th>
+            <th>Date</th>
+            <th>User (id)</th>
+        </tr>
+        {% for x in stockMovement %}
+            <tr>
+                <td>{{x.movement_type}}</td>
+                <td>{{x.singed_amount}}</td>
+                <td>{{x.quantity_after}}</td>
+                <td>{{x.created_at}}</td>
+                <td>{{x.user_id}}</td>
+            </tr>
+        {% endfor %}
+    </table>
+
+    <p><a href="/">go home</a> <a href="/inventory">to inventory</a></p>
+{% endblock content %}

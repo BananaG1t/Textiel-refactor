@@ -1,0 +1,162 @@
+{% load i18n %}
+{% load static %}
+
+<link rel="stylesheet" href="{% static 'sidebar.css' %}">
+
+<aside class="sidebar" id="app-sidebar">
+    <div class="sidebar-header">
+        <h4 class="sidebar-title">Textielmakers</h4>
+
+        {% if request.user.is_authenticated %}
+            <div class="sidebar-icon-row">
+                {% if perms.common.view_settings %}
+                    <a
+                        href="{% url 'common:settings' %}"
+                        class="sidebar-icon-link"
+                        title="{% trans 'Settings' %}"
+                        aria-label="{% trans 'Settings' %}"
+                    >
+                    ⚙️
+                    </a>
+                {% endif %}
+
+                <a
+                    href="{% url 'users:profile' %}"
+                    class="sidebar-icon-link"
+                    title="{% trans 'Profile' %}"
+                    aria-label="{% trans 'Profile' %}"
+                >
+                👤
+                </a>
+
+                <form method="post" action="{% url 'users:logout' %}" class="sidebar-icon-form">
+                    {% csrf_token %}
+                    <button
+                        type="submit"
+                        class="sidebar-icon-link"
+                        title="{% trans 'Log out' %}"
+                        aria-label="{% trans 'Log out' %}"
+                    >
+                        🚪
+                    </button>
+                </form>
+            </div>
+        {% endif %}
+    </div>
+
+    <nav class="sidebar-nav" aria-label="{% trans 'Main navigation' %}">
+        <ul class="sidebar-menu">
+
+            {% if perms.common.view_dashboard %}
+                <li class="menu-item">
+                    <a href="{% url 'common:dashboard' %}" class="menu-link">
+                        <span>{% trans "Dashboard" %}</span>
+                    </a>
+                </li>
+            {% endif %}
+
+
+            {# Orders #}
+            {% if perms.orders.view_order %}
+                <li class="menu-item menu-group-gap">
+                    <a href="{% url 'orders:view_orders' %}" class="menu-link">
+                        <span>{% trans "All orders" %}</span>
+                    </a>
+                </li>
+
+                <li class="menu-item">
+                    <a href="{% url 'orders:view_orders_errors' %}" class="menu-link">
+                        <span>{% trans "Errors" %}</span>
+                    </a>
+                </li>
+            {% endif %}
+
+            {% if perms.production.view_productionorder %}
+                <li class="menu-item">
+                    <a href="{% url 'production:production_orders_list' %}" class="menu-link">
+                        <span>{% trans "Production" %}</span>
+                    </a>
+                </li>
+            {% endif %}
+
+            {% if perms.orders.add_order %}
+                <li class="menu-item">
+                    <a href="{% url 'orders:create_order' %}" class="menu-link">
+                        <span>{% trans "Create order" %}</span>
+                    </a>
+                </li>
+            {% endif %}
+
+
+            {# Products / inventory #}
+            {% if perms.products.view_product %}
+                <li class="menu-item menu-group-gap">
+                    <a href="{% url 'products:view_products' %}" class="menu-link">
+                        <span>{% trans "Inventory" %}</span>
+                    </a>
+                </li>
+            {% endif %}
+
+            {% if perms.products.add_product %}
+                <li class="menu-item">
+                    <a href="{% url 'products:create_product' %}" class="menu-link">
+                        <span>{% trans "Add product" %}</span>
+                    </a>
+                </li>
+            {% endif %}
+
+            {% if perms.products.view_purchaseorder %}
+                <li class="menu-item">
+                    <a href="{% url 'products:purchase_order_list' %}" class="menu-link">
+                        <span>{% trans "Purchase orders" %}</span>
+                    </a>
+                </li>
+            {% endif %}
+
+            {% if perms.products.view_supplier %}
+                <li class="menu-item">
+                    <a href="{% url 'products:supplier_list' %}" class="menu-link">
+                        <span>{% trans "Suppliers" %}</span>
+                    </a>
+                </li>
+            {% endif %}
+
+
+            {# Users #}
+            {% if perms.users.view_user %}
+                <li class="menu-item menu-group-gap">
+                    <a href="{% url 'users:view_users' %}" class="menu-link">
+                        <span>{% trans "Users" %}</span>
+                    </a>
+                </li>
+            {% endif %}
+
+            {% if perms.users.view_shops %}
+                <li class="menu-item">
+                    <a href="{% url 'shops:shop_list' %}" class="menu-link">
+                        <span>{% trans "Shops" %}</span>
+                    </a>
+                </li>
+            {% endif %}
+
+            {% if perms.users.view_storagefacility %}
+                <li class="menu-item">
+                    <a href="{% url 'warehouse:storage' %}" class="menu-link">
+                        <span>{% trans "Warehouse" %}</span>
+                    </a>
+                </li>
+            {% endif %}
+
+
+            {# Logs #}
+            {% if perms.orders.view_logs %}
+                <li class="menu-item menu-group-gap">
+                    <a href="{% url 'logs' %}" class="menu-link">
+                        <span>{% trans "Log" %}</span>
+                    </a>
+                </li>
+            {% endif %}
+
+        </ul>
+    </nav>
+</aside>

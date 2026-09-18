@@ -1,0 +1,29 @@
+{% load static %}
+{% load i18n %}
+<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE }}">
+<head>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            html {
+                background-color: rgb(20, 20, 20);
+            }
+        }
+    </style>
+
+    <title>{% block title %}Textielmakers{% endblock title %}</title>
+
+    <link rel="stylesheet" href="{% static 'global.css' %}">
+    {% block extra_css %}{% endblock extra_css %}
+</head>
+
+<body>
+    {% block sidebar %}
+        {% include "sidebar.html" %}
+    {% endblock sidebar %}
+
+    <main class="{% block main_class %}main-content{% endblock main_class %}" id="app-main-content">
+        {% block content %}{% endblock content %}
+    </main>
+</body>
+</html>

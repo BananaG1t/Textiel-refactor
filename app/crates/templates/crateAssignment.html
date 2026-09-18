@@ -1,0 +1,36 @@
+{% extends "master.html" %}
+
+{% block content %}
+    <h1>{{crate.id}}</h1>
+
+    <p>Code: {{ crate.code }}</p>
+
+    <table>
+        <tr>
+            <th>Order id</th>
+            <th>Created at</th>
+        </tr>
+        {% for x in orders %}
+            <tr onclick="assignOrder({{ x.id }})">
+                <td>{{x.id}}</td>
+                <td>{{x.created_at}}</td>
+            </tr>
+        {% endfor %}
+    </table>
+
+    <p><a href="/">go home</a> <a href="/crates">to crates</a></p>
+
+    <script>
+        function getCookie(name) {
+            const match = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
+            return match ? match.pop() : '';
+        }
+
+        function assignOrder(orderId) {
+            fetch(`/crates/{{ crate.id }}/assign/${orderId}/`, {
+                method: 'POST',
+                headers: { 'X-CSRFToken': getCookie('csrftoken') }
+            }).then(() => location.reload());
+        }
+    </script>
+{% endblock content %}

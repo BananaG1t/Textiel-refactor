@@ -1,0 +1,326 @@
+# -------------------------------------------------------------------
+# This is the docker-file for development and testing purposes.
+#
+# It uses docker-build.sh file to ensure a .env file exists before starting.
+#
+# It contains the services:
+# - web: The main Django application server
+# - postgres: A PostgreSQL database server
+# - redis: A Redis server for caching and background tasks
+# - mockshop: A service that keeps making orders for testing (profile: testing)
+# - pgadmin / redisinsight / minio: optional admin/inspection UIs (profile: tools)
+#
+# A plain `docker compose up` starts only web + postgres + redis - everything
+# needed to run the app. The web service runs makemigrations/migrate/
+# collectstatic/runserver on every start.
+#
+# Optional extras:
+#   docker compose --profile tools up -d      # pgadmin, redisinsight, minio
+#   docker compose --profile testing up mockshop
+#
+# You can find their usage instructions in the README.md file &
+# accompanying diagrams should be provided by Arie.
+#
+# It is meant to simulate how render.com would run the application in production.
+# -------------------------------------------------------------------
+
+### Login information found in .env ###
+services:
+  # This service (mockshop) is only for development and testing purposes.
+  # It simulates a Shopify store by creating orders and sending webhooks.
+  # Start with: docker-compose --profile manual up -d mockshop
+  #
+  # The service will:
+  # - Generate random orders every 60 seconds (configurable)
+  # - Send webhooks to the main app at http://web:8000/shopify_webhook/
+  # - Provide API endpoints at http://localhost:8001/api/orders/
+  #
+  # Webhook Testing Service
+  # Generates mock Shopify orders and sends webhooks to the main app.
+  #
+  # Start with: docker-compose --profile testing up mockshop
+  #
+  # Options (set via environment variables):
+  #   MOCKSHOP_INTERVAL: Seconds between orders (default: 60)
+  #   MOCKSHOP_GRAPHQL: Set to "true" for GraphQL format
+  #
+  mockshop:
+    image: python:3.12-slim
+    container_name: mockshop_generator
+    working_dir: /app
+    environment:
+      - PYTHONUNBUFFERED=1
+      - DJANGO_SETTINGS_MODULE=app.config.settings
+      - POSTGRES_HOST=postgres
+      - POSTGRES_DB=${POSTGRES_DB:-app_db}
+      - POSTGRES_USER=${POSTGRES_USERNAME:-app_user}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-app_pass}
+    command: >
+      sh -c "pip install pip-tools requests &&
+      pip-compile requirements-dev.in -o requirements-dev.txt 2>/dev/null || true &&
+      pip install -r requirements-dev.txt &&
+      echo '🚀 Starting webhook generator...' &&
+      python manage.py generate_orders
+      --interval ${MOCKSHOP_INTERVAL:-60}
+      --webhook-url http://127.0.0.1:8000/shopify_webhook/
+      --shop-domain mockshop.myshopify.com
+      ${MOCKSHOP_GRAPHQL:+--graphql}"
+    volumes:
+      - .:/app
+    depends_on:
+      - web
+      - postgres
+    profiles: [ "testing" ]
+
+  web:
+    image: python:3.12-slim
+    # build:
+    #   context: .
+    container_name: parrod_app
+    working_dir: /app
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB:-app_db}
+      - POSTGRES_USER=${POSTGRES_USERNAME:-app_user}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-app_pass}
+      - POSTGRES_HOST=${POSTGRES_HOST:-db}
+      - POSTGRES_PORT=${POSTGRES_PORT:-5432}
+      - REDIS_INTERNAL_URL=${REDIS_INTERNAL_URL:-redis://redis:6379/1}
+      - PYTHONUNBUFFERED=1
+    command: >
+      sh -c "pip install pip-tools &&
+            pip-compile requirements-dev.in -o requirements-dev.txt &&
+            pip install -r requirements-dev.txt &&
+            python manage.py makemigrations --noinput &&
+            python manage.py migrate &&
+            python manage.py collectstatic --noinput &&
+            python manage.py runserver 0.0.0.0:8000"
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    # check if postgres and redis are up
+    depends_on:
+      postgres:
+          condition: service_healthy
+      redis:
+          condition: service_healthy
+    develop:
+      watch:
+        - action: sync+restart
+          path: .
+          target: /app
+        - action: rebuild
+          path: requirements.txt
+
+  web-prod:
+    image: python:3.12-slim
+    container_name: parrod_app_prod
+    working_dir: /app
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB:-app_db}
+      - POSTGRES_USER=${POSTGRES_USERNAME:-app_user}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-app_pass}
+      - POSTGRES_HOST=${POSTGRES_HOST:-db}
+      - POSTGRES_PORT=${POSTGRES_PORT:-5432}
+      - REDIS_INTERNAL_URL=${REDIS_INTERNAL_URL:-redis://redis:6379/1}
+      - PYTHONUNBUFFERED=1
+      - DEBUG=False
+      - WEB_CONCURRENCY=4
+    command: >
+      sh -c "pip install pip-tools &&
+            pip-compile requirements.in -o requirements.txt &&
+            pip install -r requirements.txt &&
+            python manage.py migrate --noinput &&
+            python manage.py collectstatic --noinput &&
+            gunicorn app.config.wsgi:application -c gunicorn.conf.py"
+    volumes:
+      - .:/app
+    ports:
+      - "8001:8000"
+    env_file:
+      - .env
+    depends_on:
+      postgres:
+          condition: service_healthy
+      redis:
+          condition: service_healthy
+    profiles:
+      - prod
+
+  celery-worker:
+    image: python:3.12-slim
+    container_name: celery_worker
+    working_dir: /app
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB:-app_db}
+      - POSTGRES_USER=${POSTGRES_USERNAME:-app_user}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-app_pass}
+      - POSTGRES_HOST=${POSTGRES_HOST:-db}
+      - POSTGRES_PORT=${POSTGRES_PORT:-5432}
+      - REDIS_INTERNAL_URL=${REDIS_INTERNAL_URL:-redis://redis:6379/1}
+      - PYTHONUNBUFFERED=1
+      - C_FORCE_ROOT=true
+    command: >
+      sh -c "pip install pip-tools &&
+            pip-compile requirements-dev.in -o requirements-dev.txt &&
+            pip install -r requirements-dev.txt &&
+            echo '🚀 Starting Celery worker...' &&
+            celery -A app.config worker --loglevel=info --logfile=logs/celery-worker.log"
+    volumes:
+      - .:/app
+    env_file:
+      - .env
+    depends_on:
+      postgres:
+          condition: service_healthy
+      redis:
+          condition: service_healthy
+    restart: unless-stopped
+    profiles:
+      - prod
+
+  celery-beat:
+    image: python:3.12-slim
+    container_name: celery_beat
+    working_dir: /app
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB:-app_db}
+      - POSTGRES_USER=${POSTGRES_USERNAME:-app_user}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-app_pass}
+      - POSTGRES_HOST=${POSTGRES_HOST:-db}
+      - POSTGRES_PORT=${POSTGRES_PORT:-5432}
+      - REDIS_INTERNAL_URL=${REDIS_INTERNAL_URL:-redis://redis:6379/1}
+      - PYTHONUNBUFFERED=1
+      - C_FORCE_ROOT=true
+    command: >
+      sh -c "pip install pip-tools &&
+            pip-compile requirements-dev.in -o requirements-dev.txt &&
+            pip install -r requirements-dev.txt &&
+            echo '🚀 Starting Celery beat scheduler...' &&
+            celery -A app.config beat --loglevel=info --logfile=logs/celery-beat.log"
+    volumes:
+      - .:/app
+    env_file:
+      - .env
+    depends_on:
+      postgres:
+          condition: service_healthy
+      redis:
+          condition: service_healthy
+    restart: unless-stopped
+    profiles:
+      - prod
+
+  postgres:
+    image: postgres:18
+    container_name: textielmakers_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-app_db}
+      POSTGRES_USER: ${POSTGRES_USERNAME:-app_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-app_pass}
+    volumes:
+      - textielmakers_db:/var/lib/postgresql
+    ports:
+      - "5432:5432"
+        # added health check so for the webservice
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - >
+          pg_isready
+          -U ${POSTGRES_USERNAME:-app_user}
+          -d ${POSTGRES_DB:-app_db}
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+
+  redis:
+    # image fixed on 8.2 alpine version
+    image: redis:8-alpine
+    #container name to be added as volume for persistence
+    container_name: redis_cache
+    restart: unless-stopped
+    environment:
+      REDIS_USER: ${REDIS_USERNAME:-myuser}
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-mypassword}
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+        # added health check so for the webservice
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+    command:
+      - redis-server
+      - --save ""
+      - --appendonly no
+      - --user
+      - default
+      - on
+      - ">default"
+      - "~*"
+      - "&*"
+      - "+@all"
+      - --user
+      - ${REDIS_USERNAME}
+      - on
+      - ">${REDIS_PASSWORD}"
+      - "~*"
+      - "&*"
+      - "+@all"
+
+  # Optional admin/inspection UIs - not needed to run or test the app.
+  # Start with: docker compose --profile tools up -d
+  pgadmin:
+    image: dpage/pgadmin4:9.8
+    container_name: pgadmin_ui
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@localhost}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-admin}
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+    profiles:
+      - tools
+
+  redisinsight:
+    image: redislabs/redisinsight:latest
+    container_name: redis_ui
+    restart: unless-stopped
+    ports:
+      - "5540:5540"
+    depends_on:
+      - redis
+    profiles:
+      - tools
+
+  minio:
+    image: quay.io/minio/minio:latest
+    container_name: dynamic-image-buckets
+    restart: unless-stopped
+    environment:
+      MINIO_ROOT_USER: ${AWS_S3_ACCESS_KEY_ID:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${AWS_S3_SECRET_ACCESS_KEY:-minioadmin}
+    command: server /data --console-address ":9001"
+    ports:
+      - "9000:9000"
+      - "9001:9001" # UI port
+    profiles:
+      - tools
+
+volumes:
+  textielmakers_db: # database volume, was eerst db_data
+  redis_data: 
+  pgadmin_data: # for postgresql online admin
+  minio_data:
+  redisinsight_data:

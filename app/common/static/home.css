@@ -1,0 +1,163 @@
+.home {
+    min-height: 100%;
+    background: var(--app-bg);
+}
+
+/* Hero */
+
+.home-hero {
+    padding: 4.5rem 3rem;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+}
+
+.home-hero-content {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.home-eyebrow {
+    display: inline-block;
+    margin-bottom: 0.75rem;
+
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.home-hero h1 {
+    margin: 0;
+
+    color: var(--text-primary);
+    font-size: 2.375rem;
+    line-height: 1.2;
+    font-weight: 600;
+}
+
+.home-hero p {
+    max-width: 600px;
+    margin: 1rem 0 0;
+
+    color: var(--text-secondary);
+    font-size: 1.0625rem;
+    line-height: 1.6;
+}
+
+
+/* Content */
+
+.home-content {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 3rem;
+}
+
+.home-content h2 {
+    margin: 0 0 1.25rem;
+
+    color: var(--text-primary);
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+
+/* Links */
+
+.home-links {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem;
+}
+
+.home-link {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+
+    padding: 1.5rem;
+
+    color: inherit;
+    text-decoration: none;
+
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+
+    transition:
+        border-color 0.15s ease,
+        box-shadow 0.15s ease,
+        transform 0.15s ease;
+}
+
+.home-link:hover {
+    border-color: var(--border-strong, #d1d5db);
+    box-shadow: var(--shadow-sm);
+    transform: translateY(-2px);
+}
+
+.home-link:focus-visible {
+    outline: 2px solid var(--brand-primary);
+    outline-offset: 3px;
+}
+
+.home-link-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 44px;
+    height: 44px;
+
+    color: var(--text-primary);
+    background: var(--surface-muted);
+    border-radius: var(--radius-md);
+
+    font-size: 1.3125rem;
+}
+
+.home-link h3 {
+    margin: 0 0 0.375rem;
+
+    color: var(--text-primary);
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.home-link p {
+    margin: 0;
+
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    line-height: 1.5;
+}
+
+
+/* Responsive */
+
+@media (max-width: 800px) {
+    .home-hero {
+        padding: 3rem 1.5rem;
+    }
+
+    .home-hero h1 {
+        font-size: 1.875rem;
+    }
+
+    .home-content {
+        padding: 2rem 1.5rem;
+    }
+
+    .home-links {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .home-link {
+        transition: none;
+    }
+
+    .home-link:hover {
+        transform: none;
+    }
+}

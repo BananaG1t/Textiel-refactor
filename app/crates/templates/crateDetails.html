@@ -1,0 +1,45 @@
+{% extends "master.html" %}
+
+{% block content %}
+    <h1>{{crate.id}}</h1>
+    
+    <p>Attatched order: {{ crate.order }}</p>
+    <p>Code: {{ crate.code }}</p>
+
+    <table>
+        <tr>
+            <th>Name</th>
+            <th>Quantity</th>
+        </tr>
+        {% for x in items %}
+            <tr>
+                <td>{{x.product.name}}</td>
+                <td>{{x.quantity}}</td>
+            </tr>
+        {% endfor %}
+    </table>
+
+    <button onclick="completeOrder()">Complete Order</button>
+
+    <p><a href="/">go home</a> <a href="/crates">to crates</a></p>
+
+    <script>
+        function getCookie(name) {
+            const match = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
+            return match ? match.pop() : '';
+        }
+
+        function completeOrder() {
+            fetch(`/crates/{{ crate.id }}/complete/`, {
+                method: 'POST',
+                headers: { 'X-CSRFToken': getCookie('csrftoken') }
+            }).then(response => {
+                if (response.ok) {
+                    location.reload();
+                } else {
+                    alert('Could not complete order.');
+                }
+            });
+        }
+    </script>
+{% endblock content %}

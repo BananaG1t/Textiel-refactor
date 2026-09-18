@@ -1,0 +1,31 @@
+{% extends "master.html" %}
+
+{% block content %}
+    <h1>Product list</h1>
+
+    <div class="productTable">
+        <table>
+            <tr>
+                <th>Name</th>
+                <th>Quantity</th>
+                <th>Available</th>
+                <th>SKU</th>
+            </tr>
+
+            {% for x in products %}
+                <tr onclick="window.location = 'details/{{x.sku}}'">
+                    <td>{{x.name}}</td>
+                    <td>{{x.quantity}}</td>
+                    <td>{{x.available}}</td>
+                    <td>{{x.sku}}</td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td>no products found</td>
+                </tr>
+            {% endfor %}
+        </table>
+    </div>
+
+    <p><a href="/">home</a>
+{% endblock content %}

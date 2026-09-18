@@ -1,0 +1,48 @@
+{% extends "master.html" %}
+
+{% block content %}
+    <h1>Crate {{ crate.id }}</h1>
+
+    <p>Attached order: {{ crate.order }}</p>
+    <p>Code: {{ crate.code }}</p>
+
+    <h2>Materials to collect</h2>
+    <table>
+        <tr>
+            <th>Product</th>
+            <th>SKU</th>
+            <th>Quantity</th>
+        </tr>
+        {% for a in allocations %}
+            <tr>
+                <td>{{ a.product.name }}</td>
+                <td>{{ a.product.sku }}</td>
+                <td>{{ a.quantity }}</td>
+            </tr>
+        {% endfor %}
+    </table>
+
+    <button onclick="completePicking()">Materials Collected</button>
+
+    <p><a href="/">go home</a> <a href="/crates">to crates</a></p>
+
+    <script>
+        function getCookie(name) {
+            const match = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
+            return match ? match.pop() : '';
+        }
+
+        function completePicking() {
+            fetch(`/crates/{{ crate.id }}/completePicking/`, {
+                method: 'POST',
+                headers: { 'X-CSRFToken': getCookie('csrftoken') }
+            }).then(response => {
+                if (response.ok) {
+                    location.reload();
+                } else {
+                    alert('Could not update crate status.');
+                }
+            });
+        }
+    </script>
+{% endblock content %}

@@ -1,0 +1,31 @@
+{% extends "master.html" %}
+
+{% block content %}
+    <h1>Crate list</h1>
+
+    <div class="crateTable">
+        <table>
+            <tr>
+                <th>id</th>
+                <th>status</th>
+                <th>order</th>
+                <th>code</th>
+            </tr>
+
+            {% for x in crates %}
+                <tr onclick="window.location = 'details/{{x.id}}'">
+                    <td>{{x.id}}</td>
+                    <td>{{x.status}}</td>
+                    <td>{{x.order}}</td>
+                    <td>{{x.code}}</td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td>no crates found</td>
+                </tr>
+            {% endfor %}
+        </table>
+    </div>
+
+    <p><a href="/">home</a>
+{% endblock content %}
