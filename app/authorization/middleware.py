@@ -11,8 +11,12 @@ class AuthenticationMiddleware:
 
     GUEST_ONLY_URLS = {
         "/users/login",
-        "/users/password_reset",
+        "/users/forgot_password",
     }
+
+    GUEST_ONLY_URL_PREFIXES = (
+        "/users/reset_password/",
+    )
 
     def __init__(self, get_response):
         self.get_response = get_response
@@ -33,10 +37,7 @@ class AuthenticationMiddleware:
         return user.is_authenticated and user.is_active
     
     def _is_exempt(self, path: str):
-        if path in self.EXEMPT_URLS:
-            return True
+        return path in self.EXEMPT_URLS or path.startswith(self.EXEMPT_URL_PREFIXES)
 
-        return path.startswith(self.EXEMPT_URL_PREFIXES)
-
-    def _is_guest_only(self, path):
-        return path in self.GUEST_ONLY_URLS
+    def _is_guest_only(self, path: str):
+        return path in self.GUEST_ONLY_URLS or path.startswith(self.GUEST_ONLY_URL_PREFIXES)

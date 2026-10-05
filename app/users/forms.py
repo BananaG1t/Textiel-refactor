@@ -1,6 +1,6 @@
 from django import forms
-from django.contrib.auth.forms import PasswordChangeForm
-
+from django.contrib.auth.forms import AuthenticationForm
+from django.utils.translation import gettext_lazy as _
 from .models import User
 from .validators import (
     validate_name,
@@ -8,6 +8,27 @@ from .validators import (
     validate_phone_number,
 )
 
+class LoginForm(AuthenticationForm):
+    username = forms.EmailField(
+        label="Email",
+        widget=forms.EmailInput(attrs={
+            "autocomplete": "email",
+            "placeholder": _("you@example.com")
+            ,
+            "autofocus": True
+        }),
+    )
+
+    password = forms.CharField(
+        label=_("Password"),
+        strip=False,
+        widget=forms.PasswordInput(
+            attrs={
+                "autocomplete": "current-password",
+                "placeholder": _("Your password"),
+            }
+        )
+    )
 
 class ProfileForm(forms.ModelForm):
     first_name = forms.CharField(

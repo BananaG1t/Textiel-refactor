@@ -41,7 +41,21 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-sfdbwusjuh3ev@*0_3gv79^p6$rt@+@z9x^omj96p8s!pk$h+6'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv('DEBUG', 'False') == 'True'
+
+# Email settings
+DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'noreply@parrod.nl')
+EMAIL_HOST = os.getenv('EMAIL_HOST', '')
+EMAIL_PORT = int(os.getenv('EMAIL_PORT', '587'))
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
+EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'True') == 'True' 
+PASSWORD_RESET_TIMEOUT = 60 * 60  # Password reset link expiration time in seconds (1 hour)
+
+if DEBUG and not EMAIL_HOST: # No SMTP configured locally - print emails to the console instead of # trying (and failing) to connect to localhost:25.
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend' 
+else: 
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
 ALLOWED_HOSTS = []
 

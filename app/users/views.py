@@ -1,9 +1,9 @@
 from django.http import HttpResponse
-from django.contrib.auth import authenticate, login as auth_login
-from django.contrib.auth.forms import PasswordChangeForm
+from django.contrib.auth import login as auth_login
+from django.contrib.auth.forms import PasswordChangeForm, PasswordResetForm
 from django.contrib import messages
 from django.shortcuts import redirect, render
-from .forms import ProfileForm
+from .forms import ProfileForm, LoginForm
 
 # Create your views here.
 def view_users(request):
@@ -11,34 +11,36 @@ def view_users(request):
 
 def login(request):
     if request.method == 'POST':
-        email = request.POST["email"]
-        password = request.POST["password"]
-
-        user = authenticate(
-            request,
-            username=email,
-            password=password,
-        )
-
-        if user is not None:
-            auth_login(request, user)
+        form = LoginForm(request, data=request.POST)
+        if form.is_valid():
+            auth_login(request, form.get_user())
             return redirect("/")
 
+    else:
+        form = LoginForm(request)
 
-    if request.method == 'GET':
-        return render(request, 'login.html')
+    return render(request, 'login.html', {'form': form})
 
-    return HttpResponse("Method not allowed", status=405)
-
-def password_reset(request):
+def forgot_password(request):
     if request.method == 'POST':
-        # Handle password reset logic here
-        pass
+        form = PasswordResetForm(request.POST)
+        if form.is_valid():
+            form.save(
+                request=request,
+                use_https=request.is_secure(),
+            )
 
-    if request.method == 'GET':
-        return render(request, 'password_reset.html')
+            messages.success(
+                request,
+                "If an account exists with this email address, "
+                "you will receive a password reset link.",
+            )
+            return redirect("users:forgot_password")
 
-    return HttpResponse("Method not allowed", status=405)
+    else:
+        form = PasswordResetForm()
+
+    return render(request, 'forgot_password.html', {'form': form})
 
 def logout(request):
     if request.method == 'POST':

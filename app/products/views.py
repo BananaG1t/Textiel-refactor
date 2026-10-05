@@ -1,6 +1,6 @@
 from django.http import HttpResponse
 from django.shortcuts import render
-from .models import Product, StockMovement
+from .models import Product
 
 # Create your views here.
 def view_products(request):
@@ -12,10 +12,8 @@ def view_products(request):
 
 def productDetails(request, sku):
     product = Product.objects.get(sku=sku)
-    stockMovement = product.stock_movements.all().order_by("-created_at")
     context = {
         'product': product,
-        'stockMovement': stockMovement,
     }
     return render(request, 'productDetails.html', context)
 
