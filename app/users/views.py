@@ -63,6 +63,7 @@ def profile(request):
             else:
                 messages.error(request, "Please correct the errors below.")
                 return render(request, 'profile.html', {'profile_form': form})
+
         if form_type == "password":
             form = PasswordChangeForm(request.user, request.POST)
             if form.is_valid():
