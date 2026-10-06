@@ -7,7 +7,7 @@ class AuditLog(models.Model):
     level = models.CharField(max_length=20)
     action = models.CharField(max_length=100)
 
-    user_id = models.IntegerField(null=True, blank=True)
+    user = models.ForeignKey("users.User", on_delete=models.PROTECT, null=True, blank=True)
 
     object_type = models.CharField(max_length=100, null=True, blank=True)
     object_id = models.CharField(max_length=100, null=True, blank=True)

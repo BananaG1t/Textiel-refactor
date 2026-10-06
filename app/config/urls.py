@@ -19,7 +19,7 @@ from django.urls import include, path
 urlpatterns = [
     path('', include('common.urls')),
     path('products/', include('products.urls')),
-    path('users/', include('users.urls')),
+    path('', include('users.urls')), # We want a cleant /login so we add /users/ in the urls.py
     path('orders/', include('orders.urls')),
     path('logs/', include('audit.urls')),
     #path('crates/', include('crates.urls'))

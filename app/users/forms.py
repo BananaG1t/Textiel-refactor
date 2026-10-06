@@ -1,5 +1,5 @@
 from django import forms
-from django.contrib.auth.forms import AuthenticationForm
+from django.contrib.auth.forms import AuthenticationForm, PasswordChangeForm
 from django.utils.translation import gettext_lazy as _
 from .models import User
 from .validators import (
@@ -7,6 +7,7 @@ from .validators import (
     validate_email_address,
     validate_phone_number,
 )
+from authorization.models import Role
 
 class LoginForm(AuthenticationForm):
     username = forms.EmailField(
@@ -95,3 +96,52 @@ class ProfileForm(forms.ModelForm):
             )
 
         return email
+
+class PasswordChangeForm(PasswordChangeForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.fields["old_password"].widget.attrs.pop("autofocus", None)
+
+class UserFilterForm(forms.Form):
+
+    search = forms.CharField(
+        required=False,
+        label=_("Search"),
+        widget=forms.TextInput(
+            attrs={
+                "placeholder": _("Search by name or email"),
+            },
+        ),
+    )
+
+    id = forms.IntegerField(
+        required=False,
+        label=_("ID"),
+    )
+
+    role = forms.ModelChoiceField(
+        required=False,
+        label=_("Role"),
+        queryset=Role.objects.all(),
+        empty_label=_("All roles"),
+    )
+
+    is_active = forms.TypedChoiceField(
+        required=False,
+        label=_("Status"),
+        choices=(
+            ("", _("All")),
+            ("true", _("Active")),
+            ("false", _("Inactive")),
+        ),
+        coerce=lambda value: value == "true",
+        initial="true"
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        if self.is_bound and "is_active" not in self.data:
+            self.data = self.data.copy()
+            self.data["is_active"] = "true"

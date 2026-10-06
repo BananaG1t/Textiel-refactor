@@ -15,10 +15,14 @@ def settings(request):
 
 class FilteredListView(ListView):
     filter_form_class = None
+    scope_func = None
 
     pagination_form_class = PaginationForm
     paginate_by = 50
     pagination_options = (25, 50, 100, 200)
+
+    search_fields = ()
+    filter_map = {}
 
     def get_filter_form(self):
         if self.filter_form_class:
@@ -34,6 +38,9 @@ class FilteredListView(ListView):
 
     def get_queryset(self):
         queryset = super().get_queryset()
+
+        if self.scope_func:
+            queryset = self.scope_func(queryset, self.request.user)
 
         form = self.get_filter_form()
 
@@ -60,10 +67,10 @@ class FilteredListView(ListView):
             if field == "search" or value in (None, ""):
                 continue
 
-            lookup = self.filter_map.get(field, field)
+            lookup = self.filter_map.get(field, f"{field}__icontains")
 
             queryset = queryset.filter(
-                **{f"{lookup}__icontains": value}
+                **{lookup: value}
             )
 
         return queryset

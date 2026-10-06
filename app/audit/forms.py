@@ -13,6 +13,6 @@ class AuditLogFilterForm(forms.Form):
         ],
     )
     action = forms.CharField(required=False)
-    user = forms.CharField(required=False)
+    email = forms.CharField(required=False)
     object_type = forms.CharField(required=False)
     object_id = forms.CharField(required=False)

@@ -3,20 +3,15 @@
 {% load i18n %}
 {% load static %}
 
-{% block title %}{% trans "Audit Logs" %} | Textielmakers{% endblock title %}
-
-{% block extra_css %}
-
-<link rel="stylesheet" href="{% static 'logs.css' %}">
-{% endblock %}
+{% block title %}{% trans "Users" %} | Textielmakers{% endblock title %}
 
 {% block content %}
 
-<div class="audit-logs">
+<div class="users">
 
-<header class="audit-logs__header">
-    <h1>{% trans "Audit Logs" %}</h1>
-    <p>{% trans "Overview of important actions and changes." %}</p>
+<header class="users__header">
+    <h1>{% trans "Users" %}</h1>
+    <p>{% trans "Overview of all users." %}</p>
 </header>
 
 <form method="get" class="filters">
@@ -49,36 +44,22 @@
 
         <thead>
             <tr>
-                <th>{% trans "Date" %}</th>
-                <th>{% trans "Level" %}</th>
-                <th>{% trans "Action" %}</th>
-                <th>{% trans "User" %}</th>
-                <th>{% trans "Object" %}</th>
-                <th>{% trans "Message" %}</th>
+                <th>{% trans "ID" %}</th>
+                <th>{% trans "Name" %}</th>
+                <th>{% trans "Role" %}</th>
+                <th>{% trans "Email" %}</th>
             </tr>
         </thead>
 
         <tbody>
 
-            {% for log in logs %}
+            {% for user in users %}
 
-                <tr onclick="window.location.href='{% url 'audit:log_detail' log.id %}'" class="clickable-row">
-                    <td>{{ log.timestamp|date:"d-m-Y H:i:s" }}</td>
-                    <td>{{ log.level }}</td>
-                    <td>{{ log.action }}</td>
-                    <td>{{ log.user.email|default:"—" }}</td>
-                    <td>
-                        {% if log.object_type %}
-                            {{ log.object_type }}
-
-                            {% if log.object_id %}
-                                #{{ log.object_id }}
-                            {% endif %}
-                        {% else %}
-                            —
-                        {% endif %}
-                    </td>
-                    <td>{{ log.message }}</td>
+                <tr onclick="window.location.href='{% url 'users:user_details' user.id %}'" class="clickable-row">
+                    <td>{{ user.id }}</td>
+                    <td>{{ user.full_name }}</td>
+                    <td>{{ user.role }}</td>
+                    <td>{{ user.email|default:"—" }}</td>
                 </tr>
 
             {% empty %}

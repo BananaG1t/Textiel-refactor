@@ -17,5 +17,11 @@ class AuditLogListView(FilteredListView):
     )
 
     filter_map = {
-        "user": "user_id",
+        "level": "level",
+        "email": "user__email__icontains",
+        "object_id": "object_id",
     }
+
+def log_details(request, pk):
+    log = AuditLog.objects.get(pk=pk)
+    return render(request, "log_details.html", {"log": log})

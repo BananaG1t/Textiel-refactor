@@ -88,14 +88,15 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    "django.contrib.auth.middleware.LoginRequiredMiddleware",
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     "django.middleware.locale.LocaleMiddleware",
     'whitenoise.middleware.WhiteNoiseMiddleware',
-    'authorization.middleware.AuthenticationMiddleware',
 ]
 
 ROOT_URLCONF = 'config.urls'
+LOGIN_URL = "/login/"
 
 TEMPLATES = [
     {

@@ -1,0 +1,106 @@
+{% extends "master.html" %}
+
+{% load i18n %}
+{% load static %}
+
+{% block title %}{% trans "Log details" %} | Textielmakers{% endblock title %}
+
+{% block extra_css %}
+
+<link rel="stylesheet" href="{% static 'log_details.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<div class="log-details">
+
+<header class="log-details__header">
+    <div>
+        <h1>{% trans "Log details" %}</h1>
+        <p>{% trans "Detailed information about this audit event." %}</p>
+    </div>
+
+    <a href="{% url 'audit:view_audit_logs' %}" class="button">
+        {% trans "Back to logs" %}
+    </a>
+</header>
+
+<div class="log-details__content">
+
+    <section class="log-details__section">
+
+        <h2>{% trans "Event" %}</h2>
+
+        <dl class="details-list">
+
+            <div class="details-list__item">
+                <dt>{% trans "Date" %}</dt>
+                <dd>{{ log.timestamp|date:"d-m-Y H:i:s" }}</dd>
+            </div>
+
+            <div class="details-list__item">
+                <dt>{% trans "Level" %}</dt>
+                <dd>{{ log.level }}</dd>
+            </div>
+
+            <div class="details-list__item">
+                <dt>{% trans "Action" %}</dt>
+                <dd>{{ log.action }}</dd>
+            </div>
+
+            <div class="details-list__item">
+                <dt>{% trans "User" %}</dt>
+                <dd>
+                    {% if log.user %}
+                        {{ log.user.email }}
+                    {% else %}
+                        —
+                    {% endif %}
+                </dd>
+            </div>
+
+            <div class="details-list__item">
+                <dt>{% trans "Object type" %}</dt>
+                <dd>
+                    {{ log.object_type|default:"—" }}
+                </dd>
+            </div>
+
+            <div class="details-list__item">
+                <dt>{% trans "Object ID" %}</dt>
+                <dd>
+                    {{ log.object_id|default:"—" }}
+                </dd>
+            </div>
+
+        </dl>
+
+    </section>
+
+    <section class="log-details__section">
+
+        <h2>{% trans "Message" %}</h2>
+
+        <p class="log-details__message">
+            {{ log.message }}
+        </p>
+
+    </section>
+
+    {% if log.metadata %}
+
+        <section class="log-details__section">
+
+            <h2>{% trans "Metadata" %}</h2>
+
+            <pre class="log-details__metadata">{{ log.metadata|pprint }}</pre>
+
+        </section>
+
+    {% endif %}
+
+</div>
+
+</div>
+
+{% endblock %}
