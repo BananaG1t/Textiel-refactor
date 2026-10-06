@@ -26,7 +26,7 @@ class AuthenticationMiddleware:
             return self.get_response(request)
 
         if self._is_guest_only(request.path) and self._is_valid_user(request.user):
-            return redirect("home:home")
+            return redirect("common:home")
 
         if not self._is_valid_user(request.user) and not self._is_guest_only(request.path):
             return redirect("users:login")

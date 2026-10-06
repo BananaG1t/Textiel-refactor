@@ -1,0 +1,142 @@
+{% extends "master.html" %}
+
+{% load i18n %}
+{% load static %}
+
+{% block title %}{% trans "Audit Logs" %} | Textielmakers{% endblock title %}
+
+{% block extra_css %}
+
+<link rel="stylesheet" href="{% static 'logs.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<div class="audit-logs">
+
+<header class="audit-logs__header">
+    <h1>{% trans "Audit Logs" %}</h1>
+    <p>{% trans "Overview of important actions and changes." %}</p>
+</header>
+
+<form method="get" class="audit-logs__filters">
+
+    {{ filter_form }}
+
+    <div class="audit-logs__filter-pagination">
+        {{ pagination_form.per_page }}
+    </div>
+
+    <div class="audit-logs__filter-actions">
+        <button type="submit">
+            {% trans "Filter" %}
+        </button>
+    </div>
+
+</form>
+
+<div class="audit-logs__table-container">
+
+    <table class="audit-logs__table">
+
+        <thead>
+            <tr>
+                <th>{% trans "Date" %}</th>
+                <th>{% trans "Level" %}</th>
+                <th>{% trans "Action" %}</th>
+                <th>{% trans "User" %}</th>
+                <th>{% trans "Object" %}</th>
+                <th>{% trans "Message" %}</th>
+            </tr>
+        </thead>
+
+        <tbody>
+
+            {% for log in logs %}
+
+                <tr>
+                    <td>
+                        {{ log.timestamp|date:"d-m-Y H:i:s" }}
+                    </td>
+
+                    <td>
+                        {{ log.level }}
+                    </td>
+
+                    <td>
+                        {{ log.action }}
+                    </td>
+
+                    <td>
+                        {% if log.user_id %}
+                            {{ log.user_id }}
+                        {% else %}
+                            —
+                        {% endif %}
+                    </td>
+
+                    <td>
+                        {% if log.object_type %}
+                            {{ log.object_type }}
+
+                            {% if log.object_id %}
+                                #{{ log.object_id }}
+                            {% endif %}
+                        {% else %}
+                            —
+                        {% endif %}
+                    </td>
+
+                    <td>
+                        {{ log.message }}
+                    </td>
+                </tr>
+
+            {% empty %}
+
+                <tr>
+                    <td colspan="6">
+                        {% trans "No audit logs found." %}
+                    </td>
+                </tr>
+
+            {% endfor %}
+
+        </tbody>
+
+    </table>
+
+</div>
+
+{% if is_paginated %}
+
+    <nav
+        class="audit-logs__pagination"
+        aria-label="{% trans 'Audit log pagination' %}"
+    >
+
+        {% if page_obj.has_previous %}
+            <a href="{% querystring page=page_obj.previous_page_number %}">
+                {% trans "Previous" %}
+            </a>
+        {% endif %}
+
+        <span>
+            {% blocktrans with current=page_obj.number total=page_obj.paginator.num_pages %}
+                Page {{ current }} of {{ total }}
+            {% endblocktrans %}
+        </span>
+
+        {% if page_obj.has_next %}
+            <a href="{% querystring page=page_obj.next_page_number %}">
+                {% trans "Next" %}
+            </a>
+        {% endif %}
+
+    </nav>
+
+{% endif %}
+
+</div>
+
+{% endblock %}

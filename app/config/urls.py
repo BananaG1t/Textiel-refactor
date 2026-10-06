@@ -21,6 +21,7 @@ urlpatterns = [
     path('products/', include('products.urls')),
     path('users/', include('users.urls')),
     path('orders/', include('orders.urls')),
+    path('logs/', include('audit.urls')),
     #path('crates/', include('crates.urls'))
 
     # Localization / Language

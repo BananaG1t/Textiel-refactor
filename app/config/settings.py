@@ -73,6 +73,7 @@ INSTALLED_APPS = [
     'orders',
     'users',
     'authorization',
+    'audit',
     #'crates',
 ]
 
@@ -160,6 +161,30 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+# Logging configuration
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+
+    "handlers": {
+        "audit_db": {
+            "class": "audit.handlers.DatabaseAuditHandler",
+            "level": "INFO",
+        },
+        "console": {
+            "class": "logging.StreamHandler",
+            "level": "DEBUG" if DEBUG else "INFO",
+        },
+    },
+
+    "loggers": {
+        "audit": {
+            "handlers": ["audit_db", "console"],
+            "level": "DEBUG" if DEBUG else "INFO",
+            "propagate": False,
+        },
+    },
+}
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/

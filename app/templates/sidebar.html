@@ -149,10 +149,10 @@
 
 
             {# Logs #}
-            {% if perms.orders.view_logs %}
+            {% if perms.audit.view_auditlog %}
                 <li class="menu-item menu-group-gap">
-                    <a href="{% url 'logs' %}" class="menu-link">
-                        <span>{% trans "Log" %}</span>
+                    <a href="{% url 'audit:view_audit_logs' %}" class="menu-link">
+                        <span>{% trans "Logs" %}</span>
                     </a>
                 </li>
             {% endif %}

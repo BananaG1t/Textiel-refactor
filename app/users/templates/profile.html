@@ -132,7 +132,8 @@
             <div class="profile-card__body">
                 <form method="POST" action="{% url 'users:profile' %}">
                     {% csrf_token %}
-                    
+                    <input type="hidden" name="form_type" value="password">
+
                     {% if form.non_field_errors %}
                         <div class="form-message form-message--error" role="alert">
                             {{ form.non_field_errors }}
